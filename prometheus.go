@@ -3,7 +3,8 @@
 
 	To update the list of endpoints for a particular job:
 
-	  response, err := prometheus.UpdateEndpoints("job-name", []prometheus.Endpoint{{
+		client := prometheus.Client{"http://url/to/prometheus"}
+	  response, err := client.UpdateEndpoints("job-name", []prometheus.Endpoint{{
 	    BaseLabels: map[string]string{"label1": "value1", "label2": "value2"},
 	    Endpoints:  []string{"http://example.com:8080/metrics.json", "http://example.com:8081/metrics.json"},
 	  }, {
@@ -22,16 +23,19 @@ import (
 )
 
 const (
-	PROMETHEUS_URL           = "http://localhost:8080/api"
-	PROMETHEUS_ENDPOINTS_URL = PROMETHEUS_URL + "/jobs/%s/endpoints"
+	ENDPOINTS_URL = "/api/jobs/%s/endpoints"
 )
+
+type Client struct {
+	Url string
+}
 
 type Endpoint struct {
 	// a set of labels
 	BaseLabels map[string]string `json:"baseLabels"`
 
 	// a group of endpoints
-	Endpoints  []string          `json:"endpoints"`
+	Endpoints []string `json:"endpoints"`
 }
 
 // http PUT to given url
@@ -60,8 +64,8 @@ func EndpointsToJson(endpoints []Endpoint) ([]byte, error) {
 }
 
 // replace the current list of endpoints with the given new list
-func UpdateEndpoints(job string, endpoints []Endpoint) (*http.Response, error) {
-	url := fmt.Sprintf(PROMETHEUS_ENDPOINTS_URL, url.QueryEscape(job))
+func (client *Client) UpdateEndpoints(job string, endpoints []Endpoint) (*http.Response, error) {
+	url := fmt.Sprintf(client.Url+ENDPOINTS_URL, url.QueryEscape(job))
 
 	endpoints_json, err := EndpointsToJson(endpoints)
 	if err != nil {
