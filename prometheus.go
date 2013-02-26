@@ -2,6 +2,7 @@
 //
 //	To update the list of endpoints for a particular job:
 //
+//		client := prometheus.Client{"http://localhost:8080"}
 //		err := client.UpdateEndpoints("job-name", []prometheus.TargetGroup{{
 //			BaseLabels: map[string]string{"label1": "value1", "label2": "value2"},
 //			Endpoints:	[]string{
