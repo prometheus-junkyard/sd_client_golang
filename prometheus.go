@@ -5,13 +5,13 @@
 //		client := prometheus.Client{"http://localhost:8080"}
 //		err := client.UpdateEndpoints("job-name", []prometheus.TargetGroup{{
 //			BaseLabels: map[string]string{"label1": "value1", "label2": "value2"},
-//			Endpoints:	[]string{
+//			Endpoints: []string{
 //				"http://example.com:8080/metrics.json",
 //				"http://example.com:8081/metrics.json",
 //			},
 //		}, {
 //			BaseLabels: map[string]string{"label3": "value3"},
-//			Endpoints:	[]string{
+//			Endpoints: []string{
 //				"http://example.com:8082/metrics.json",
 //				"http://example.com:8083/metrics.json",
 //			},
