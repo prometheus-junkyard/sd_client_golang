@@ -2,13 +2,18 @@
 //
 //	To update the list of endpoints for a particular job:
 //
-//		client := prometheus.Client{"http://url/to/prometheus"}
-//		err := client.UpdateEndpoints("job-name", []prometheus.Endpoint{{
+//		err := client.UpdateEndpoints("job-name", []prometheus.TargetGroup{{
 //			BaseLabels: map[string]string{"label1": "value1", "label2": "value2"},
-//			Endpoints: []string{"http://example.com:8080/metrics.json", "http://example.com:8081/metrics.json"},
+//			Endpoints:	[]string{
+//				"http://example.com:8080/metrics.json",
+//				"http://example.com:8081/metrics.json",
+//			},
 //		}, {
 //			BaseLabels: map[string]string{"label3": "value3"},
-//			Endpoints: []string{"http://example.com:8082/metrics.json", "http://example.com:8083/metrics.json"},
+//			Endpoints:	[]string{
+//				"http://example.com:8082/metrics.json",
+//				"http://example.com:8083/metrics.json",
+//			},
 //		}})
 package prometheus
 
