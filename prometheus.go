@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	ENDPOINTS_URL = "/api/jobs/%s/endpoints"
+	EndpointsUrl = "/api/jobs/%s/endpoints"
 )
 
 type Client struct {
