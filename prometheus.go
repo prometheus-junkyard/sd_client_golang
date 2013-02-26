@@ -2,7 +2,7 @@
 //
 //	To update the list of endpoints for a particular job:
 //
-//		client := prometheus.Client{"http://localhost:8080"}
+//		client := prometheus.Client{Url: "http://localhost:8080"}
 //		err := client.UpdateEndpoints("job-name", []prometheus.TargetGroup{{
 //			BaseLabels: map[string]string{"label1": "value1", "label2": "value2"},
 //			Endpoints: []string{
@@ -24,14 +24,17 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 const (
-	EndpointsUrl = "/api/jobs/%s/endpoints"
+	EndpointsUrl   = "/api/jobs/%s/endpoints"
+	DefaultTimeout = 30
 )
 
 type Client struct {
-	Url string
+	Url     string
+	Timeout time.Duration
 }
 
 type TargetGroup struct {
@@ -43,14 +46,26 @@ type TargetGroup struct {
 }
 
 // http PUT to given url
-func put(url string, data []byte) (response *http.Response, err error) {
+func put(url string, data []byte, timeout time.Duration) (response *http.Response, err error) {
 	client := &http.Client{}
 	request, err := http.NewRequest("PUT", url, bytes.NewReader(data))
 	if err != nil {
 		return
 	}
 
-	response, err = client.Do(request)
+	ready := make(chan bool)
+	go func() {
+		response, err = client.Do(request)
+		ready <- true
+	}()
+
+	select {
+	case <-ready:
+		break
+	case <-time.After(time.Second * timeout):
+		err = fmt.Errorf("timeout reached while trying to update %s", url)
+		return
+	}
 	return
 }
 
@@ -63,8 +78,12 @@ func targetGroupsToJson(targetGroups []TargetGroup) (targetGroupsJson []byte, er
 // replace the current list of endpoints with the given new list
 func (client *Client) UpdateEndpoints(job string, targetGroups []TargetGroup) (err error) {
 	url := fmt.Sprintf(client.Url+EndpointsUrl, url.QueryEscape(job))
+	timeout := client.Timeout
+	if timeout == 0 {
+		timeout = DefaultTimeout
+	}
 
 	targetGroupsJson, err := targetGroupsToJson(targetGroups)
-	_, err = put(url, targetGroupsJson)
+	_, err = put(url, targetGroupsJson, timeout)
 	return
 }
