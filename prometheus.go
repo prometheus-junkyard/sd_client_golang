@@ -27,7 +27,7 @@ type Client struct {
 	Url string
 }
 
-type Endpoint struct {
+type TargetGroup struct {
 	// a set of labels
 	BaseLabels map[string]string `json:"baseLabels"`
 
@@ -51,22 +51,22 @@ func Put(url string, data []byte) (*http.Response, error) {
 }
 
 // marshal a list of endpoints
-func EndpointsToJson(endpoints []Endpoint) ([]byte, error) {
-	endpoints_json, err := json.Marshal(endpoints)
+func targetGroupsToJson(targetGroups []TargetGroup) ([]byte, error) {
+	targetGroupsJson, err := json.Marshal(targetGroups)
 
 	if err != nil {
 		return nil, fmt.Errorf("Could not marshal data: %s", err)
 	}
-	return endpoints_json, nil
+	return targetGroupsJson, nil
 }
 
 // replace the current list of endpoints with the given new list
-func (client *Client) UpdateEndpoints(job string, endpoints []Endpoint) (*http.Response, error) {
-	url := fmt.Sprintf(client.Url+ENDPOINTS_URL, url.QueryEscape(job))
+func (client *Client) UpdateEndpoints(job string, targetGroups []TargetGroup) (*http.Response, error) {
+	url := fmt.Sprintf(client.Url+EndpointsUrl, url.QueryEscape(job))
 
-	endpoints_json, err := EndpointsToJson(endpoints)
+	targetGroupsJson, err := targetGroupsToJson(targetGroups)
 	if err != nil {
 		return nil, err
 	}
-	return Put(url, endpoints_json)
+	return Put(url, targetGroupsJson)
 }
