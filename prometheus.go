@@ -36,37 +36,28 @@ type TargetGroup struct {
 }
 
 // http PUT to given url
-func Put(url string, data []byte) (*http.Response, error) {
+func put(url string, data []byte) (response *http.Response, err error) {
 	client := &http.Client{}
 	request, err := http.NewRequest("PUT", url, bytes.NewReader(data))
 	if err != nil {
-		return nil, fmt.Errorf("Could not create request to %s: %s", url, err)
+		return
 	}
 
-	response, err := client.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("Could not send request to %s: %s", url, err)
-	}
-	return response, nil
+	response, err = client.Do(request)
+	return
 }
 
 // marshal a list of endpoints
-func targetGroupsToJson(targetGroups []TargetGroup) ([]byte, error) {
-	targetGroupsJson, err := json.Marshal(targetGroups)
-
-	if err != nil {
-		return nil, fmt.Errorf("Could not marshal data: %s", err)
-	}
-	return targetGroupsJson, nil
+func targetGroupsToJson(targetGroups []TargetGroup) (targetGroupsJson []byte, err error) {
+	targetGroupsJson, err = json.Marshal(targetGroups)
+	return
 }
 
 // replace the current list of endpoints with the given new list
-func (client *Client) UpdateEndpoints(job string, targetGroups []TargetGroup) (*http.Response, error) {
+func (client *Client) UpdateEndpoints(job string, targetGroups []TargetGroup) (err error) {
 	url := fmt.Sprintf(client.Url+EndpointsUrl, url.QueryEscape(job))
 
 	targetGroupsJson, err := targetGroupsToJson(targetGroups)
-	if err != nil {
-		return nil, err
-	}
-	return Put(url, targetGroupsJson)
+	_, err = put(url, targetGroupsJson)
+	return
 }
