@@ -49,8 +49,8 @@ type TargetGroup struct {
 // http PUT to given url
 func put(url string, data []byte, timeout time.Duration) (response *http.Response, err error) {
 	client := http.Client{
-	  Transport: &http.Transport{
-			Dial: func(netw, addr string) (net.Conn, error) { return net.DialTimeout(netw, addr, timeout * time.Second) },
+		Transport: &http.Transport{
+			Dial: func(netw, addr string) (net.Conn, error) { return net.DialTimeout(netw, addr, timeout) },
 		},
 	}
 	request, err := http.NewRequest("PUT", url, bytes.NewReader(data))
