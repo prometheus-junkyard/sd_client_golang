@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -47,25 +48,19 @@ type TargetGroup struct {
 
 // http PUT to given url
 func put(url string, data []byte, timeout time.Duration) (response *http.Response, err error) {
-	client := &http.Client{}
+	client := http.Client{
+	  Transport: &http.Transport{
+			Dial: func(netw, addr string) (net.Conn, error) { return net.DialTimeout(netw, addr, timeout * time.Second) },
+		},
+	}
 	request, err := http.NewRequest("PUT", url, bytes.NewReader(data))
 	if err != nil {
 		return
 	}
 
-	ready := make(chan bool)
-	go func() {
-		response, err = client.Do(request)
-		ready <- true
-	}()
-
-	select {
-	case <-ready:
-		break
-	case <-time.After(time.Second * timeout):
-		err = fmt.Errorf("timeout reached while trying to update %s", url)
-		return
-	}
+	fmt.Printf("fireing req\n")
+	response, err = client.Do(request)
+	fmt.Printf("returned\n")
 	return
 }
 
