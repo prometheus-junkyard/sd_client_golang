@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	EndpointsUrl   = "/api/jobs/%s/endpoints"
-	DefaultTimeout = 30
+	endpointsUrl   = "/api/jobs/%s/endpoints"
+	defaultTimeout = 30
 )
 
 type Client struct {
@@ -77,10 +77,10 @@ func targetGroupsToJson(targetGroups []TargetGroup) (targetGroupsJson []byte, er
 
 // replace the current list of endpoints with the given new list
 func (client *Client) UpdateEndpoints(job string, targetGroups []TargetGroup) (err error) {
-	url := fmt.Sprintf(client.Url+EndpointsUrl, url.QueryEscape(job))
+	url := fmt.Sprintf(client.Url+endpointsUrl, url.QueryEscape(job))
 	timeout := client.Timeout
 	if timeout == 0 {
-		timeout = DefaultTimeout
+		timeout = defaultTimeout
 	}
 
 	targetGroupsJson, err := targetGroupsToJson(targetGroups)
