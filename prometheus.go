@@ -58,6 +58,16 @@ func transport(netw, addr string, timeout time.Duration) (connection net.Conn, e
 	return
 }
 
+func New(url string) Client {
+	return Client{url: url}
+}
+
+// marshal a list of endpoints
+func targetGroupsToJson(targetGroups []TargetGroup) (targetGroupsJson []byte, err error) {
+	targetGroupsJson, err = json.Marshal(targetGroups)
+	return
+}
+
 // http PUT to given url
 func (client *Client) put(path string, data []byte) (response *http.Response, err error) {
 	httpClient := http.Client{
@@ -75,22 +85,12 @@ func (client *Client) put(path string, data []byte) (response *http.Response, er
 	return
 }
 
-// marshal a list of endpoints
-func targetGroupsToJson(targetGroups []TargetGroup) (targetGroupsJson []byte, err error) {
-	targetGroupsJson, err = json.Marshal(targetGroups)
-	return
-}
-
 // replace the current list of endpoints with the given new list
 func (client *Client) UpdateEndpoints(job string, targetGroups []TargetGroup) (err error) {
 	path := fmt.Sprintf(endpointsUrl, url.QueryEscape(job))
 	targetGroupsJson, err := targetGroupsToJson(targetGroups)
 	_, err = client.put(path, targetGroupsJson)
 	return
-}
-
-func New(url string) Client {
-	return Client{url: url}
 }
 
 func (client *Client) SetTimeout(timeout time.Duration) {
