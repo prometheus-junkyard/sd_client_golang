@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	endpointsUrl   = "/api/jobs/%s/endpoints"
+	targetsUrl     = "/api/jobs/%s/targets"
 	defaultTimeout = 30
 )
 
@@ -45,7 +45,7 @@ func New(url string) Client {
 	return Client{url: url}
 }
 
-// marshal a list of endpoints
+// marshal a list of target groups
 func targetGroupsToJson(targetGroups []TargetGroup) (targetGroupsJson []byte, err error) {
 	targetGroupsJson, err = json.Marshal(targetGroups)
 	return
@@ -68,9 +68,9 @@ func (client *Client) put(path string, data []byte) (response *http.Response, er
 	return
 }
 
-// replace the current list of endpoints with the given new list
+// replace the current list of target groups with the given new list
 func (client *Client) UpdateEndpoints(job string, targetGroups []TargetGroup) (err error) {
-	path := fmt.Sprintf(endpointsUrl, url.QueryEscape(job))
+	path := fmt.Sprintf(targetsUrl, url.QueryEscape(job))
 	targetGroupsJson, err := targetGroupsToJson(targetGroups)
 	_, err = client.put(path, targetGroupsJson)
 	return
