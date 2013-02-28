@@ -67,9 +67,7 @@ func put(url string, data []byte, timeout time.Duration) (response *http.Respons
 		return
 	}
 
-	fmt.Printf("fireing req\n")
 	response, err = client.Do(request)
-	fmt.Printf("returned\n")
 	return
 }
 
