@@ -34,8 +34,8 @@ const (
 )
 
 type Client struct {
-	Url     string
-	Timeout time.Duration
+	url     string
+	timeout time.Duration
 }
 
 type TargetGroup struct {
@@ -47,6 +47,9 @@ type TargetGroup struct {
 }
 
 func transport(netw, addr string, timeout time.Duration) (connection net.Conn, err error) {
+	if timeout == 0 {
+		timeout = defaultTimeout
+	}
 	deadline := time.Now().Add(timeout)
 	connection, err = net.DialTimeout(netw, addr, timeout)
 	if err == nil {
@@ -56,18 +59,19 @@ func transport(netw, addr string, timeout time.Duration) (connection net.Conn, e
 }
 
 // http PUT to given url
-func put(url string, data []byte, timeout time.Duration) (response *http.Response, err error) {
-	client := http.Client{
+func (client *Client) put(path string, data []byte) (response *http.Response, err error) {
+	httpClient := http.Client{
 		Transport: &http.Transport{
-			Dial: func(netw, addr string) (net.Conn, error) { return transport(netw, addr, timeout) },
+			Dial: func(netw, addr string) (net.Conn, error) { return transport(netw, addr, client.timeout) },
 		},
 	}
+	url := client.url + path
 	request, err := http.NewRequest("PUT", url, bytes.NewReader(data))
 	if err != nil {
 		return
 	}
 
-	response, err = client.Do(request)
+	response, err = httpClient.Do(request)
 	return
 }
 
@@ -79,13 +83,16 @@ func targetGroupsToJson(targetGroups []TargetGroup) (targetGroupsJson []byte, er
 
 // replace the current list of endpoints with the given new list
 func (client *Client) UpdateEndpoints(job string, targetGroups []TargetGroup) (err error) {
-	url := fmt.Sprintf(client.Url+endpointsUrl, url.QueryEscape(job))
-	timeout := client.Timeout
-	if timeout == 0 {
-		timeout = defaultTimeout
-	}
-
+	path := fmt.Sprintf(endpointsUrl, url.QueryEscape(job))
 	targetGroupsJson, err := targetGroupsToJson(targetGroups)
-	_, err = put(url, targetGroupsJson, timeout)
+	_, err = client.put(path, targetGroupsJson)
 	return
+}
+
+func New(url string) Client {
+	return Client{url: url}
+}
+
+func (client *Client) SetTimeout(timeout time.Duration) {
+	client.timeout = timeout
 }
