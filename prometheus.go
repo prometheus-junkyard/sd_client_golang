@@ -22,14 +22,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
 )
 
 const (
-	EndpointsUrl   = "/api/jobs/%s/endpoints"
-	DefaultTimeout = 30
+	endpointsUrl   = "/api/jobs/%s/endpoints"
+	defaultTimeout = 30
 )
 
 type Client struct {
@@ -45,27 +46,28 @@ type TargetGroup struct {
 	Endpoints []string `json:"endpoints"`
 }
 
+func transport(netw, addr string, timeout time.Duration) (connection net.Conn, err error) {
+	deadline := time.Now().Add(timeout)
+	connection, err = net.DialTimeout(netw, addr, timeout)
+	if err == nil {
+		connection.SetDeadline(deadline)
+	}
+	return
+}
+
 // http PUT to given url
 func put(url string, data []byte, timeout time.Duration) (response *http.Response, err error) {
-	client := &http.Client{}
+	client := http.Client{
+		Transport: &http.Transport{
+			Dial: func(netw, addr string) (net.Conn, error) { return transport(netw, addr, timeout) },
+		},
+	}
 	request, err := http.NewRequest("PUT", url, bytes.NewReader(data))
 	if err != nil {
 		return
 	}
 
-	ready := make(chan bool)
-	go func() {
-		response, err = client.Do(request)
-		ready <- true
-	}()
-
-	select {
-	case <-ready:
-		break
-	case <-time.After(time.Second * timeout):
-		err = fmt.Errorf("timeout reached while trying to update %s", url)
-		return
-	}
+	response, err = client.Do(request)
 	return
 }
 
@@ -77,10 +79,10 @@ func targetGroupsToJson(targetGroups []TargetGroup) (targetGroupsJson []byte, er
 
 // replace the current list of endpoints with the given new list
 func (client *Client) UpdateEndpoints(job string, targetGroups []TargetGroup) (err error) {
-	url := fmt.Sprintf(client.Url+EndpointsUrl, url.QueryEscape(job))
+	url := fmt.Sprintf(client.Url+endpointsUrl, url.QueryEscape(job))
 	timeout := client.Timeout
 	if timeout == 0 {
-		timeout = DefaultTimeout
+		timeout = defaultTimeout
 	}
 
 	targetGroupsJson, err := targetGroupsToJson(targetGroups)
