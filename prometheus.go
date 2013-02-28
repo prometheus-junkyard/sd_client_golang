@@ -13,7 +13,7 @@ import (
 
 const (
 	endpointsUrl   = "/api/jobs/%s/endpoints"
-	defaultTimeout = 30
+	defaultTimeout = 30 * time.Second
 )
 
 type Client struct {
