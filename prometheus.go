@@ -1,21 +1,4 @@
 //	Package prometheus implements a client library to manage Prometheus server job state.
-//
-//	To update the list of endpoints for a particular job:
-//
-//		client := prometheus.Client{Url: "http://localhost:8080"}
-//		err := client.UpdateEndpoints("job-name", []prometheus.TargetGroup{{
-//			BaseLabels: map[string]string{"label1": "value1", "label2": "value2"},
-//			Endpoints: []string{
-//				"http://example.com:8080/metrics.json",
-//				"http://example.com:8081/metrics.json",
-//			},
-//		}, {
-//			BaseLabels: map[string]string{"label3": "value3"},
-//			Endpoints: []string{
-//				"http://example.com:8082/metrics.json",
-//				"http://example.com:8083/metrics.json",
-//			},
-//		}})
 package prometheus
 
 import (
