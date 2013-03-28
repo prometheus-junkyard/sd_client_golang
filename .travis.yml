@@ -1,0 +1,8 @@
+language: go
+
+before_script:
+ - go get -v github.com/prometheus/sd_client_golang
+
+script:
+ - go build -a -v github.com/prometheus/sd_client_golang/...
+ - go test -v github.com/prometheus/sd_client_golang/...
